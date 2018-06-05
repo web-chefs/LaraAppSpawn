@@ -3,6 +3,7 @@
 namespace WebChefs\LaraAppSpawn;
 
 // PHP
+use Closure;
 use DomainException;
 use RuntimeException;
 
@@ -24,7 +25,7 @@ class ApplicationResolver
     protected $config;
 
     /**
-     * @var array
+     * @var Repository
      */
     protected $appConfig;
 
@@ -76,7 +77,7 @@ class ApplicationResolver
 
         // Set db path to env path if null
         // Set database path to use fallback
-        $dbPath       = Arr::get($this->config, 'database.path');
+        $dbPath = Arr::get($this->config, 'database.path');
         $dbPath = $dbPath ?: $this->envPath;
         Arr::set($this->config, 'database.path', $dbPath);
 
@@ -225,6 +226,25 @@ class ApplicationResolver
         $config = $this->buildAppConfig($configPath);
 
         file_put_contents($configPath, '<?php return '.var_export($config, true).';');
+    }
+
+    /**
+     * Include and add our Service Provider to the App config.
+     *
+     * @param  string $configPath
+     *
+     * @return array
+     */
+    protected function buildAppConfig($configPath)
+    {
+        $config = require($configPath);
+
+        $callback = Arr::get($this->config, 'callback.vendor_config');
+        if ($callback instanceof Closure) {
+            $config = call_user_func($callback, $config);
+        }
+
+        return $config;
     }
 
     /**
