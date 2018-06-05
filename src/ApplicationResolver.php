@@ -195,7 +195,7 @@ class ApplicationResolver
         }
 
         // Go up a level
-        $path = dirname($path, 1);
+        $path = dirname($path);
 
         // Check if we have reached the end
         if ($path == '.' || $path == DIRECTORY_SEPARATOR) {
