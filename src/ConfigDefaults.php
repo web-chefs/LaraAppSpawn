@@ -20,6 +20,25 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Callbacks
+     |--------------------------------------------------------------------------
+     |
+     | Allow for dynamic process of configs in spawned apps
+     |
+     */
+
+    'callback' => [
+
+        // When App is spawned from vendor, inject custom service providers
+        // for travis-ci builds here.
+        'vendor_config' => function(array $config) {
+            return $config;
+        },
+
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
      | Default database connection
      |--------------------------------------------------------------------------
      |
