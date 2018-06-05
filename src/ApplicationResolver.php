@@ -4,6 +4,7 @@ namespace WebChefs\LaraAppSpawn;
 
 // PHP
 use DomainException;
+use RuntimeException;
 
 // Framework
 use Illuminate\Support\Arr;
@@ -89,7 +90,7 @@ class ApplicationResolver
         }
         // If we are running in a automated build try and include the
         // application from vendor
-        catch(Exception $e) {
+        catch(DomainException $e) {
             $this->writeBuildConfig(__DIR__);
             $this->app = require $this->getVendorAppPath(__DIR__);
         }
@@ -199,7 +200,7 @@ class ApplicationResolver
 
         // Check if we have reached the end
         if ($path == '.' || $path == DIRECTORY_SEPARATOR) {
-            throw new DomainException('Lravel "bootstramp/app.php" could not be discovered.');
+            throw new DomainException('Laravel "bootstramp/app.php" could not be discovered.');
         }
 
         // Try again (recursive)
@@ -218,7 +219,7 @@ class ApplicationResolver
         $configPath = $this->getVendorAppConfig($basePath);
 
         if (! is_writable($configPath)) {
-            throw new Exception('The config/app.php file must be present and writable.');
+            throw new RuntimeException('The config/app.php file must be present and writable.');
         }
 
         $config = $this->buildAppConfig($configPath);
