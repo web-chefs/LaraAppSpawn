@@ -91,8 +91,8 @@ class ApplicationResolver
         // If we are running in a automated build try and include the
         // application from vendor
         catch(DomainException $e) {
-            $this->writeBuildConfig(__DIR__);
-            $this->app = require $this->getVendorAppPath(__DIR__);
+            $this->writeBuildConfig( $this->envPath );
+            $this->app = require $this->getVendorAppPath( $this->envPath );
         }
 
         // Make kernel
