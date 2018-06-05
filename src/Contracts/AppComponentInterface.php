@@ -21,6 +21,6 @@ interface AppComponentInterface
      *
      * @return
      */
-    public function boot(Application $app, ConfigContract $appConfig);
+    public function boot(Application $app, ConfigContract &$appConfig);
 
 }

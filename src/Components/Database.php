@@ -24,7 +24,7 @@ class Database implements AppComponentInterface
     /**
      * @var string
      */
-    protected $connetion;
+    protected $connection;
 
     /**
      * @var array
@@ -55,11 +55,11 @@ class Database implements AppComponentInterface
 
      * @return
      */
-    public function boot(Application $app, ConfigContract $appConfig)
+    public function boot(Application $app, ConfigContract &$appConfig)
     {
         // Setup test DB
-        $appConfig->set('database.connections.' . $this->connetion, $this->options);
-        $appConfig->set('database.default', $this->connetion);
+        $appConfig->set('database.connections.' . $this->connection, $this->options);
+        $appConfig->set('database.default', $this->connection);
 
         // Set database migration path EG: /mysite/database/
         $app->useDatabasePath($this->path);

@@ -4,6 +4,22 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Components to load and order
+     |--------------------------------------------------------------------------
+     |
+     | A component is a handler for a specific feature or setting that needs to
+     | be run in the setup of Application and Kernel. Very similar to service
+     | providers in Laravel, components handle the setup and boot setting,
+     |
+     */
+
+    'components' => [
+        \WebChefs\LaraAppSpawn\Components\Database::class,
+        \WebChefs\LaraAppSpawn\Components\Queue::class,
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
      | Default database connection
      |--------------------------------------------------------------------------
      |
@@ -18,7 +34,7 @@ return [
         'path'       => null,
 
         // connection name
-        'connection' => 'sqlite_mem',
+        'connection' => 'spawn_sqlite_mem',
 
         // connection options
         'options'    => [
@@ -40,7 +56,7 @@ return [
 
     'queue' => [
         // connection name
-        'connection' => 'sqlite_mem',
+        'connection' => 'spawn_sqlite_mem',
 
         // connection options
         'options'    => [

@@ -19,7 +19,7 @@ class Queue implements AppComponentInterface
     /**
      * @var string
      */
-    protected $connetion;
+    protected $connection;
 
     /**
      * @var array
@@ -49,11 +49,11 @@ class Queue implements AppComponentInterface
 
      * @return
      */
-    public function boot(Application $app, ConfigContract $appConfig)
+    public function boot(Application $app, ConfigContract &$appConfig)
     {
         // Setup test DB
-        $appConfig->set('queue.connections.' . $this->connetion, $this->options);
-        $appConfig->set('queue.default', $this->connetion);
+        $appConfig->set('queue.connections.' . $this->connection, $this->options);
+        $appConfig->set('queue.default', $this->connection);
     }
 
     /**

@@ -13,16 +13,6 @@ class ApplicationResolver
 {
 
     /**
-     * Array of components to load in the order they should be setup.
-     *
-     * @var array
-     */
-    public static $components = [
-        \WebChefs\LaraAppSpawn\Components\Database::class,
-        \WebChefs\LaraAppSpawn\Components\Queue::class,
-    ];
-
-    /**
      * @var string
      */
     protected $envPath;
@@ -31,6 +21,11 @@ class ApplicationResolver
      * @var array
      */
     protected $config;
+
+    /**
+     * @var array
+     */
+    protected $appConfig;
 
     /**
      * Component instances
@@ -58,13 +53,13 @@ class ApplicationResolver
      *
      * @return Kernel instance
      */
-    static public function makeApp($kernel = null, $envPath = null, array $config = [])
+    static public function makeApp($envPath = null, array $config = [], $kernel = null)
     {
         $envPath = is_null($envPath) ? static::getRuntimePath() : $envPath;
         $kernel  = is_null($kernel)  ? static::defaultKernel()  : $kernel;
         $config  = empty($config)    ? static::defaultConfig()  : $config;
 
-        return new static($kernel, $envPath, $config);
+        return new static($envPath, $kernel, $config);
     }
 
     /**
@@ -73,20 +68,38 @@ class ApplicationResolver
      * @param string $kernel
      * @param string $envPath
      */
-    public function __construct($kernel, $envPath, array $config = [])
+    public function __construct($envPath, $kernel, array $config = [])
     {
         $this->envPath = $envPath;
         $this->config  = $config;
 
         // Set db path to env path if null
-        $dbPath = Arr::get($this->config, 'database.path', $this->envPath);
+        // Set database path to use fallback
+        $dbPath       = Arr::get($this->config, 'database.path');
+        $dbPath = $dbPath ?: $this->envPath;
         Arr::set($this->config, 'database.path', $dbPath);
 
-        $this->BuilSetupComponents();
-        $this->app = require $this->discoverApp( $this->envPath );
+        // Build components and run setup
+        $this->setupComponents();
 
+        // Find and make the app
+        // If we are in a laravel project try and discover the application
+        try {
+            $this->app = require $this->discoverApp( $this->envPath );
+        }
+        // If we are running in a automated build try and include the
+        // application from vendor
+        catch(Exception $e) {
+            $this->writeBuildConfig(__DIR__);
+            $this->app = require $this->getVendorAppPath(__DIR__);
+        }
+
+        // Make kernel
         $this->kernel = $this->app->make($kernel);
         $this->kernel->bootstrap();
+
+        // Boot all components
+        $this->bootComponents();
     }
 
     /**
@@ -126,7 +139,11 @@ class ApplicationResolver
      */
     public function config()
     {
-        return $this->app->make('config');
+        if ($this->appConfig) {
+            return $this->appConfig;
+        }
+
+        return $this->appConfig = $this->app->make('config');
     }
 
     /**
@@ -134,7 +151,7 @@ class ApplicationResolver
      *
      * @return void
      */
-    public function bootComponents()
+    protected function bootComponents()
     {
         $config = $this->config();
 
@@ -148,9 +165,10 @@ class ApplicationResolver
      *
      * @return void
      */
-    protected function BuilSetupComponents()
+    protected function setupComponents()
     {
-        foreach (static::$components as $component) {
+        $components = Arr::get($this->config, 'components');
+        foreach ($components as $component) {
             $instance = new $component($this->config);
             $instance->setup();
 
@@ -189,11 +207,84 @@ class ApplicationResolver
     }
 
     /**
+     * Update the vendor location of config/app.php include our service provider
+     *
+     * @param  string $basePath
+     *
+     * @return void
+     */
+    protected function writeBuildConfig($basePath)
+    {
+        $configPath = $this->getVendorAppConfig($basePath);
+
+        if (! is_writable($configPath)) {
+            throw new Exception('The config/app.php file must be present and writable.');
+        }
+
+        $config = $this->buildAppConfig($configPath);
+
+        file_put_contents($configPath, '<?php return '.var_export($config, true).';');
+    }
+
+    /**
+     * Join an array and base bath correctly as a file system path.
+     *
+     * @param  string $basePath
+     * @param  array  $pathParts
+     *
+     * @return string
+     */
+    protected function makePath($basePath, $pathParts)
+    {
+        return $basePath . DIRECTORY_SEPARATOR . join(DIRECTORY_SEPARATOR, $pathParts);
+    }
+
+    /**
+     * Return the parts that should lead to the laravel route found in vendor.
+     *
+     * @return array
+     */
+    protected function getVendorAppRoot()
+    {
+        return [
+            '..',
+            'vendor',
+            'laravel',
+            'laravel',
+        ];
+    }
+
+    /**
+     * Build a path to boostrap/app.php assuming laravel/laravel is a package
+     * under vendor. This will only be the case in automated builds for testing
+     * purposes.
+     *
+     * @param  string $path "__DIR__ . '/vendor/laravel/laravel/bootstrap/app.php'"
+     *
+     * @return string
+     */
+    protected function getVendorAppPath($path)
+    {
+        return $this->makePath($path, array_merge($this->getVendorAppRoot(), ['bootstrap', 'app.php']));
+    }
+
+    /**
+     * Build the path to config/app.php when laravel is in vendor and we are
+     * running in an automated travis build.
+     *
+     * @return string
+     */
+    protected function getVendorAppConfig($basePath)
+    {
+        return $this->makePath($basePath, array_merge($this->getVendorAppRoot(), ['config', 'app.php']));
+    }
+
+    /**
      * default fallback application kernel.
      *
      * @return DefaultKernel
      */
-    static protected function defaultKernel()
+    static public function defaultKernel()
     {
         return DefaultKernel::class;
     }
@@ -205,7 +296,7 @@ class ApplicationResolver
      *
      * @return string
      */
-    static protected function getRuntimePath($depth = 2)
+    static public function getRuntimePath($depth = 2)
     {
         $stack = debug_backtrace();
         $frame = $stack[count($stack) - $depth];
@@ -217,7 +308,7 @@ class ApplicationResolver
      *
      * @return array
      */
-    static protected function defaultConfig()
+    static public function defaultConfig()
     {
         return require __DIR__ . '/ConfigDefaults.php';
     }
