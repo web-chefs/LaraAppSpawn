@@ -92,11 +92,7 @@ class MyTest extends TestCase
 
 This was originally developed for `WebChefs\LaraAppSpawn` and for testing multiple version of Laravel using the same tests.
 
-To see how that is possible see WebChefs\LaraAppSpawn [.travis.yml](https://github.com/web-chefs/LaraAppSpawn/blob/master/.travis.yml).
-
-## Change log
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+To see how that is possible see WebChefs\LaraAppSpawn [.travis.yml](https://github.com/web-chefs/QueueButler/blob/master/.travis.yml).
 
 ## Contributing
 
@@ -108,7 +104,7 @@ All code submissions will only be evaluated and accepted as pull-requests. If yo
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
 [ico-version]: https://img.shields.io/packagist/v/web-chefs/laravel-app-spawn.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
