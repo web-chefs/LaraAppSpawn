@@ -4,16 +4,18 @@
 [![Software License][ico-license]](LICENSE.md)
 [![Total Downloads][ico-downloads]][link-downloads]
 
-Laravel Custom Application Spawner, primarily used creating a Application instance in a unit testing environment allowing you to interact with Laravel in our tests.
+Laravel Custom Application Spawner is primarily used for creating a Application instance in a unit testing environment, allowing you to interact with Laravel in your tests.
 
-By default the it will use a SQLite in memory database allowing you run migrations and use a fully functional database during your tests.
+By default it will use a SQLite in memory database, allowing you to run migrations and use a fully functional database during your tests.
+
+It is up to you to migration and seed this test database.
 
 ## Install
 
 __Via Composer__
 
 ``` bash
-$ composer require web-chefs/laravel-app-spawn
+$ composer require web-chefs/laravel-app-spawn --dev
 ```
 
 ## Basic usage example
@@ -89,9 +91,9 @@ class MyTest extends TestCase
 
 ## TravisCI
 
-This was originally developed for `WebChefs\LaraAppSpawn` and for testing multiple version of Laravel using the same tests.
+This was originally developed for `WebChefs\QueueButler` and for testing multiple version of Laravel using the same tests.
 
-To see how that is possible see WebChefs\LaraAppSpawn [.travis.yml](https://github.com/web-chefs/QueueButler/blob/master/.travis.yml).
+To see how that is possible see WebChefs\QueueButler [.travis.yml](https://github.com/web-chefs/QueueButler/blob/master/.travis.yml).
 
 ## Contributing
 
